@@ -1,6 +1,22 @@
-//main board code to run
-//created by the Duncan Campbell!!!!
-//Version 7
+/*
+    Created By: Duncan Campbell and Richard Johnson
+    Copyright 2012
+
+    This file is part of UA NASA Robotic Mining Competion Robot STeve.
+
+    STeve is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Steve is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Steve.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <EasyTransfer.h>
 #include <EasyTransferI2C.h>
@@ -76,7 +92,7 @@ DCM_PACKET dcmData;
 Adafruit_Thermal printer(43,48);
 
 inline void getDCMData()
-{ 
+{
   DCM.receiveData();
 }
 
@@ -87,15 +103,15 @@ void setup()
   Serial3.begin(9600);
   ET.begin(details(netData), &Serial1);
   ET2.begin(details(autoData), &Serial1);
-  
+
   Wire.begin(2);
   DCM.begin(details(dcmData), &Wire);
   Wire.onReceive(receive);
-  
+
   pinModeFast(12, OUTPUT);
   pinModeFast(13, OUTPUT);
   digitalWriteFast(12, HIGH);
-  
+
   pinModeFast(LEFT_UP, INPUT);
   pinModeFast(LEFT_DOWN, INPUT);
   pinModeFast(RIGHT_UP, INPUT);
@@ -115,7 +131,7 @@ inline void blinky()
   static int stat = LOW;
   static unsigned long last = 0;
   static unsigned long curr = 0;
-  
+
   curr = millis();
   if(curr - last > 1000)
   {
@@ -128,11 +144,11 @@ inline void blinky()
 void processScreenData()
 {
   char temp = Serial3.read();
-  
+
   if(temp == '#')
   {
     temp = Serial3.read();
-    
+
     if(temp == 'p')
     {
       processPrinterData();
@@ -146,7 +162,7 @@ void processScreenData()
       netData.autoState == TO_MINING;
     }
   }
-  
+
   Serial3.write('$');
   Serial3.write(23);
   Serial3.write((autoData.robotvoltage / 1023.0) * 255);
@@ -157,31 +173,31 @@ void processScreenData()
 
 void processPrinterData()
 {
-  
+
   unsigned int robotVoltAverage = robotVolt / running_count;
   unsigned int robotCurrentAverage = robotCurrent / running_count;
   unsigned int comVoltAverage = comVolt / running_count;
   unsigned int comCurrentAverage = comCurrent / running_count;
   unsigned int volt = robotVoltAverage + comVoltAverage;
   unsigned int current = robotCurrentAverage + (comVoltAverage / 1000);
-  unsigned int energy = volt * current * 10; 
-  
+  unsigned int energy = volt * current * 10;
+
   printer.begin();
   delay(500);
-  printer.justify('C'); 
+  printer.justify('C');
   printer.printBitmap(180, 182, logo);
   delay(500);
   printer.boldOn();
   printer.print("FEAR THE ROOBOT!");
   printer.println(" ");
-  printer.boldOff();  
-  delay(500); 
-  printer.underlineOn(); 
+  printer.boldOff();
+  delay(500);
+  printer.underlineOn();
   printer.print("DATA:");
-  printer.underlineOff();  
+  printer.underlineOff();
   printer.println(" ");
   delay(500);
-  printer.justify('L'); 
+  printer.justify('L');
   printer.print("Energy Usage: ");
   printer.print(energy, DEC);
   printer.print(" Amp Minutes");
@@ -189,11 +205,11 @@ void processPrinterData()
   delay(500);
   printer.justify('C');
   delay(200);
-  printer.boldOn(); 
+  printer.boldOn();
   printer.println("Have a good day!");
   printer.println(" ");
   printer.println("-From S.T.E.V.E.");
-  printer.boldOff(); 
+  printer.boldOff();
   printer.println(" ");
   printer.println("Check out our Facebook with");
   printer.println("the QR code below!");
@@ -215,7 +231,7 @@ void processInputs()
   {
     netData.leftMotorSpeed = NEUTRAL;
   }
-  
+
   if(!digitalReadFast(RIGHT_UP))
   {
     netData.rightMotorSpeed = NEUTRAL - dcmData.pot2;
@@ -228,7 +244,7 @@ void processInputs()
   {
     netData.rightMotorSpeed = NEUTRAL;
   }
-  
+
   if(!digitalReadFast(ACTUATOR_UP))
   {
     netData.actuatorSpeed = 255;
@@ -241,7 +257,7 @@ void processInputs()
   {
     netData.actuatorSpeed = 127;
   }
-  
+
   if(!digitalReadFast(AUTO_STOP))
   {
     netData.leftMotorSpeed = 0;
@@ -249,7 +265,7 @@ void processInputs()
     netData.actuatorSpeed = 0;
     netData.autoState = MANUAL;
   }
-  
+
   if(!digitalReadFast(STOP))
   {
     netData.leftMotorSpeed = 0;
@@ -276,7 +292,7 @@ void loop()
       comCurrent += autoData.comcurrent;
       running_count++;
     }
-    
+
     Serial.print("M:");
     Serial.print(netData.leftMotorSpeed, DEC);
     Serial.print(" ");
@@ -290,7 +306,7 @@ void loop()
     Serial.print(" ");
     Serial.print(dcmData.pot1, DEC);
     Serial.print(" ");
-    Serial.print(dcmData.pot2, DEC);  
+    Serial.print(dcmData.pot2, DEC);
     Serial.println();
   }
 }

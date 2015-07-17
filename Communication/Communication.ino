@@ -1,6 +1,22 @@
-//main board code to run
-//created by the Duncan Campbell!!!!
-//Version 8
+/*
+    Created By: Duncan Campbell and Richard Johnson
+    Copyright 2012
+
+    This file is part of UA NASA Robotic Mining Competion Robot STeve.
+
+    STeve is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Steve is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Steve.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <EasyTransfer.h>
 #include <EasyTransferI2C.h>
@@ -18,10 +34,10 @@
 
 struct INSTRUCTIONS_PACKET
 {
-  int leftMotorSpeed;
-  int rightMotorSpeed;
-  int actuatorSpeed;
-  int autoState;
+    int leftMotorSpeed;
+    int rightMotorSpeed;
+    int actuatorSpeed;
+    int autoState;
 };
 
 struct AUTO_PACKET
@@ -67,7 +83,7 @@ void sendMotorCommand()
   Serial2.print(',');
   Serial2.print(actuatorSpeed);
   Serial2.println();
-  
+
   Serial.print(leftMotorSpeed, DEC);
   Serial.print(" ");
   Serial.print(rightMotorSpeed, DEC);
@@ -86,14 +102,14 @@ inline void comSafety(boolean check)
 {
   static unsigned long current = 0;
   static unsigned long last_com = 0;
-  
+
   current = millis();
-  
+
   if(check)
   {
     last_com = current;
   }
-  
+
   if(current - last_com > 1000)
   {
     leftMotorSpeed = 127;
@@ -125,7 +141,7 @@ void manualControl()
     actuatorSpeed = netData.actuatorSpeed;
     comSafety(true);
   }
-  
+
   if(!digitalReadFast(LIMIT_SWITCH1) && actuatorSpeed == 0)
   {
     actuatorSpeed = 127;
@@ -134,7 +150,7 @@ void manualControl()
   {
     actuatorSpeed = 127;
   }
-  
+
   if(netData.autoState == TO_DUMPING)
   {
     toDumping();
@@ -143,30 +159,30 @@ void manualControl()
   {
     toMining();
   }
-  
+
   sendMotorCommand();
-  
+
   /*
   Serial.print("D:");
   for(int i = 0; i < 5; i++)
-  { 
+  {
     Serial.print(dcmData.distance[i], DEC);
     Serial.print(" ");
   }
   Serial.println();
   */
 }
-  
+
 void receive(int howMany)
 {
-  
+
 }
 
 void toDumping()
 {
   /*
   while(netData.autoState == TO_DUMPING)
-  { 
+  {
     if(dcmData.distance[0] < 30)
     {
       leftMotorSpeed = 132;
@@ -184,7 +200,7 @@ void toDumping()
     }
   }
   */
- 
+
 }
 
 void toMining()
@@ -195,7 +211,7 @@ void toMining()
     boolean senL = false;
     boolean senC = false;
     boolean senR = false;
-    
+
     if(dcmData.distance[2] < 30)
     {
       senL = true;
@@ -204,11 +220,11 @@ void toMining()
     {
       senC = true;
     }
-    if(dcmData.distance[4] < 30)  
+    if(dcmData.distance[4] < 30)
     {
       senR = true;
     }
-    
+
     if(senL && senR)
     {
       leftMotorSpeed = 127;
@@ -231,7 +247,7 @@ void toMining()
         leftMotorSpeed = 140;
         rightMotorSpeed = 132;
       }
-    }  
+    }
     else if(senR)
     {
       if(senC)
@@ -250,7 +266,7 @@ void toMining()
       leftMotorSpeed = 130;
       rightMotorSpeed = 140;
     }
-    
+
     actuatorSpeed = 127;
     sendMotorCommand();
     ET.receiveData();
@@ -265,11 +281,11 @@ void setup()
   Serial2.begin(9600);
   ET.begin(details(netData), &Serial1);
   ET2.begin(details(autoData), &Serial1);
-  
+
   Wire.begin(2);
   DCM.begin(details(dcmData), &Wire);
   Wire.onReceive(receive);
-  
+
   pinModeFast(A15, OUTPUT);
   pinModeFast(13, OUTPUT);
   pinModeFast(12, OUTPUT);
@@ -283,7 +299,7 @@ inline void blinky()
   static int stat = LOW;
   static unsigned long last = 0;
   static unsigned long curr = 0;
-  
+
   curr = millis();
   if(curr - last > 1000)
   {
@@ -292,11 +308,11 @@ inline void blinky()
     digitalWriteFast(13, stat);
   }
 }
-  
+
 void loop()
 {
   while(1)
-  { 
+  {
     blinky();
     manualControl();
     getDCMData();
@@ -304,4 +320,3 @@ void loop()
     ET2.sendData();
   }
 }
-

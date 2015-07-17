@@ -1,3 +1,23 @@
+/*
+    Created By: Duncan Campbell and Richard Johnson
+    Copyright 2012
+
+    This file is part of UA NASA Robotic Mining Competion Robot STeve.
+
+    STeve is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Steve is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Steve.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #define DELTA_S 1 //change step numbr
 
 #include "Tlc5940.h"
@@ -12,10 +32,10 @@ int LED = 500;
 
 int ledState = HIGH;
 unsigned char hold = 0;  // 1 byte in Arduino
-long previousMillis = 0;  
+long previousMillis = 0;
 unsigned long currentMillis;
-long last = 0;  
-long last2 = 0;  
+long last = 0;
+long last2 = 0;
 int Dchange = 0;
 int mtr = 0;
 int prevmtr = 90;
@@ -35,12 +55,12 @@ char *parseptr;
 inline boolean lockDown()
 {
   static boolean set = false;
-  
+
   if(mtr == 0 || mtl == 0 || act == 0)
   {
     LED = 100;
     set = true;
-    
+
     tlc_setServo(MOTOR_L,90);
     tlc_setServo(MOTOR_R,90);
     tlc_setServo(ACT,90);
@@ -53,19 +73,19 @@ inline boolean lockDown()
     mtr = 0;
     Dchange3 = 0;
     act = 0;
-         
+
     return false;
   }
-    
+
   if(mtr != 0 && mtl != 0 && act != 0)
   {
     LED = 500;
-    
+
     if(set)
     {
       set = false;
-      last = 0;  
-      last2 = 0;  
+      last = 0;
+      last2 = 0;
       Dchange = 0;
       mtr = 0;
       prevmtr = 90;
@@ -98,7 +118,7 @@ void loop(){
    currentMillis = millis();
    Serial_mode_read();
    if(currentMillis - previousMillis > LED) {
-      previousMillis = currentMillis;   
+      previousMillis = currentMillis;
       if(ledState == LOW){
          ledState = HIGH;
          digitalWrite(7, ledState);
@@ -144,11 +164,11 @@ void loop(){
           Tlc.update();
          }
         }
-        
+
       Serial.print(prevmtr);
       Serial.print(",");
       Serial.println(prevmtl);
-      
+
       //Tlc.update();
     }
 
@@ -175,7 +195,7 @@ void loop(){
       */
       Tlc.update();
     }
-    
+
     if(currentMillis - previousMillis > INTERVAL){
        //no data : lockdown
        if(trip > 8){
@@ -197,7 +217,7 @@ void loop(){
       }
 }
 
-// We read the control values from serial port 
+// We read the control values from serial port
 void Serial_mode_read(){
 char c;
 int numc;
@@ -238,7 +258,7 @@ void parse_serial()
   parseptr = strchr(parseptr, ',')+1;
   act = parsedecimal(parseptr,3);
   trip = 0;
-  
+
   if(lockDown())
   {
     mtl = map(mtl,1,255,0,180);
@@ -253,17 +273,17 @@ void parse_serial()
     if(act > 180){
       act = 180;
     }
-    Dchange = mtl - prevmtl; //This tels us what the DELTA change from prev val to new value 
+    Dchange = mtl - prevmtl; //This tels us what the DELTA change from prev val to new value
     if(abs(Dchange) % 2 == 1){ // this seamed to fix the issue with code runaway (IE: dosn't like Dchg to have neg #'s)
-      Dchange = Dchange + 1;   
+      Dchange = Dchange + 1;
     }
-    Dchange2 = mtr - prevmtr; //This tels us what the DELTA change from prev val to new value 
+    Dchange2 = mtr - prevmtr; //This tels us what the DELTA change from prev val to new value
     if(abs(Dchange2) % 2 == 1){ // this seamed to fix the issue with code runaway (IE: dosn't like Dchg to have neg #'s)
-      Dchange2 = Dchange2 + 1;   
+      Dchange2 = Dchange2 + 1;
     }
-    Dchange3 = act - prevact; //This tels us what the DELTA change from prev val to new value 
+    Dchange3 = act - prevact; //This tels us what the DELTA change from prev val to new value
     if(abs(Dchange3) % 2 == 1){ // this seamed to fix the issue with code runaway (IE: dosn't like Dchg to have neg #'s)
-      Dchange3 = Dchange3 + 1;   
+      Dchange3 = Dchange3 + 1;
     }
   }
 }
@@ -286,5 +306,3 @@ i--;
 }
 return d;
 }
-
-

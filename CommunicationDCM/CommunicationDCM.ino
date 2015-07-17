@@ -1,7 +1,22 @@
-//Data Colection Modual (DCM) code!
-//Made By: Richard Johnson
-//Fixed By: Duncan Campbell
-//V1.0
+/*
+    Created By: Duncan Campbell and Richard Johnson
+    Copyright 2012
+
+    This file is part of UA NASA Robotic Mining Competion Robot STeve.
+
+    STeve is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    Steve is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with Steve.  If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include <Wire.h>
 #include <digitalWriteFast.h>
@@ -28,7 +43,7 @@ DCM_PACKET dcmData;
 #define M3 4
 #define M4 5
 
-//sensors 
+//sensors
 #define CS A3 //Current Sense
 #define ESTOP A2 //Estop input and mesure battery voltage
 #define VIN A1 //Comm. Board voltage in
@@ -55,11 +70,11 @@ int comvolt;
 void setup()
 {
   //Serial.begin(19200); //Lidar RS485 input
-  
-  Wire.begin();  //Join I2C bus as address 2 
+
+  Wire.begin();  //Join I2C bus as address 2
   MCU.begin(details(dcmData), &Wire);
-  
-  
+
+
   DDRD = DDRD | B111100;
   pinModeFast(M1, OUTPUT);
   pinModeFast(M2, OUTPUT);
@@ -74,20 +89,20 @@ inline void writeData()
 {
   static long last = 0;
   static long curr = 0;
-  
+
   curr = millis();
   if(curr - last > 20)
   {
     MCU.sendData(2);
   }
-} 
+}
 
 inline void blinky()
 {
   static int stat = LOW;
   static unsigned long last = 0;
   static unsigned long curr = 0;
-  
+
   curr = millis();
   if(curr - last > 1000)
   {
@@ -100,25 +115,25 @@ inline void blinky()
 void loop(){
  blinky();
  writeData();
- 
+
  /*
  if( c >= 2000)
  { //update LIDAR data
      digitalWriteFast(RS485_S, HIGH);
      Serial.print('a');
      digitalWriteFast(RS485_S,LOW);
-     
+
      digitalWriteFast(RS485_S, HIGH);
      Serial.print('b');
      digitalWriteFast(RS485_S,LOW);
      c = 0;
  }
  */
-    
+
    if( X >= 10 )
    {
-     temp = analogRead(VIN);        //Com. Board Current 
-     dcmData.comvoltage = temp / 34; //Com. Board Current 
+     temp = analogRead(VIN);        //Com. Board Current
+     dcmData.comvoltage = temp / 34; //Com. Board Current
      dcmData.comcurrent = dcmData.comvoltage / 2; //Voltage comeing in com board
      temp = analogRead(ESTOP);   //Voltage on robot
      dcmData.robotvoltage = temp / 34; //Voltage on robot
@@ -126,13 +141,13 @@ void loop(){
      dcmData.robotcurrent = (temp / 102.0) * 200;
      volts = ((readMux(3) / 1023.0) * 5.0) - .01;
      dcmData.angle = volts * (90.0/3.0);
-     
+
      dcmData.distance[0] = readMux(0);
      dcmData.distance[1] = readMux(1);
      dcmData.distance[2] = readMux(4);
      dcmData.distance[3] = readMux(5);
      dcmData.distance[4] = readMux(6);
-     
+
      X = 0;
    }
    c++;
